@@ -10,23 +10,23 @@ const countiesData = await d3.json(countiesDataEndpoint)
 const educationData = await d3.json(educationDataEndpoint)
 
 const width = 1200
-const height = 800
+const height = 700
 const padding = {
   top: 50,
   right: 100,
-  left: 100
+  left: 150
 }
-
-const tooltip = d3.select('main')
-  .append('div')
-  .attr('id', 'tooltip')
-  .classed('tooltip', true)
 
 const svg = d3.select('.svg-container')
   .append('svg')
   .attr('width', width)
   .attr('height', height)
   .classed('choropleth-map', true)
+
+const tooltip = d3.select('.svg-container')
+  .append('div')
+  .attr('id', 'tooltip')
+  .classed('tooltip', true)
 
 const [ minPercentage, maxPercentage ] = d3.extent(educationData, (d) => d.bachelorsOrHigher)
 
@@ -41,7 +41,7 @@ const colorScale = d3.scaleThreshold()
 
 const xScale = d3.scaleLinear()
   .domain([thresholdValues[0], thresholdValues.slice(-1)])
-  .range([ 2 * width / 3, width - padding.right])
+  .range([2 * width / 3, width - padding.right])
 
 const chartLegendAxis = d3.axisBottom(xScale)
   .tickValues(thresholdValues)
@@ -53,14 +53,19 @@ const chartLegend = svg.append('g')
   .attr('id', 'legend')
   .call(chartLegendAxis)
 
-chartLegend.selectAll('rect')
-  .data(thresholdValues)
+chartLegend.insert('g', 'path.domain')
+  .classed('colors', true)
+  .selectAll('rect')
+  .data(thresholdValues.slice(0, -1))
   .join('rect')
     .attr('x', d => xScale(d))
     .attr('y', 0)
-    .attr('width', (d, i, nodes) => i < nodes.length - 1 ? xScale(thresholdValues[i + 1]) - xScale(d) : 0)
-    .attr('height', '10px')
+    .attr('width', (d, i) => xScale(thresholdValues[i + 1]) - xScale(d))
+    .attr('height', 10)
     .attr('fill', d => colorScale(d))
+
+chartLegend.select('.domain')
+  .remove()
 
 const counties = topojson.feature(countiesData, 'counties')
 

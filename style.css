@@ -29,7 +29,8 @@ header {
 main {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  align-items: center;
+  padding: 10px;
 }
 
 .tooltip {
@@ -44,9 +45,4 @@ main {
 .tooltip.active {
   display: block;
   transform: translate(5px, -100%);
-}
-
-.choropleth-map {
-  display: block;
-  margin: auto;
 }
