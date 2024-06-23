@@ -17,6 +17,11 @@ const padding = {
   left: 100
 }
 
+const tooltip = d3.select('main')
+  .append('div')
+  .attr('id', 'tooltip')
+  .classed('tooltip', true)
+
 const svg = d3.select('.svg-container')
   .append('svg')
   .attr('width', width)
@@ -38,22 +43,22 @@ const xScale = d3.scaleLinear()
   .domain([thresholdValues[0], thresholdValues.slice(-1)])
   .range([ 2 * width / 3, width - padding.right])
 
-const legendAxis = d3.axisBottom(xScale)
+const chartLegendAxis = d3.axisBottom(xScale)
   .tickValues(thresholdValues)
   .tickFormat(d3.format('.0%'))
   .tickSize(15)
 
-const legend = svg.append('g')
+const chartLegend = svg.append('g')
   .attr('transform', `translate(0, ${padding.top})`)
-  .classed('legend', true)
-  .call(legendAxis)
+  .attr('id', 'legend')
+  .call(chartLegendAxis)
 
-legend.selectAll('rect')
+chartLegend.selectAll('rect')
   .data(thresholdValues)
   .join('rect')
     .attr('x', d => xScale(d))
     .attr('y', 0)
-    .attr('width', (d, i, nodes) => i < nodes.length - 1 ? xScale(thresholdValues[i + 1]) - xScale(d): 0)
+    .attr('width', (d, i, nodes) => i < nodes.length - 1 ? xScale(thresholdValues[i + 1]) - xScale(d) : 0)
     .attr('height', '10px')
     .attr('fill', d => colorScale(d))
 
@@ -63,8 +68,35 @@ const map = svg.append('g')
   .attr('transform', `translate(${padding.left}, ${padding.top + 20})`)
   .classed('map', true)
 
-map.selectAll('path')
+const paths = map.selectAll('path')
   .data(counties.features)
   .join('path')
     .attr('d', d3.geoPath())
+    .attr('data-fips', d => d.id)
+    .attr('data-education', d => {
+      const { bachelorsOrHigher } = educationData.find(item => item.fips === d.id)
+      return bachelorsOrHigher
+    })
+    .attr('fill', d => {
+      const { bachelorsOrHigher } = educationData.find(item => item.fips === d.id)
+      return colorScale(bachelorsOrHigher / 100)
+    })
     .classed('county', true)
+
+paths.on('mouseover', (event) => {
+  const fips = Number(event.target.getAttribute('data-fips'))
+  const { state, area_name, bachelorsOrHigher } = educationData.find(county => county.fips === fips)
+
+  tooltip.classed('active', true)
+    .attr('data-education', bachelorsOrHigher)
+    .style('top', event.pageY + 'px')
+    .style('left', event.pageX + 'px')
+    .append('p')
+    .text(`${area_name}, ${state}: ${bachelorsOrHigher}%`)
+})
+
+paths.on('mouseout', () => {
+  tooltip.classed('active', false)
+    .select('p')
+      .remove()
+})

@@ -32,6 +32,20 @@ main {
   width: 100%;
 }
 
+.tooltip {
+  position: absolute;
+  display: none;
+  padding: 5px 7px;
+  font-size: .8em;
+  background-color: #fffacb;
+  opacity: .7;
+}
+
+.tooltip.active {
+  display: block;
+  transform: translate(5px, -100%);
+}
+
 .choropleth-map {
   display: block;
   margin: auto;
