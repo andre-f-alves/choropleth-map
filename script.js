@@ -68,6 +68,7 @@ chartLegend.select('.domain')
   .remove()
 
 const counties = topojson.feature(countiesData, 'counties')
+const states = topojson.mesh(countiesData, countiesData.objects.states, (a, b) => a !== b)
 
 const map = svg.append('g')
   .attr('transform', `translate(${padding.left}, ${padding.top + 20})`)
@@ -87,6 +88,11 @@ const paths = map.selectAll('path')
       return colorScale(bachelorsOrHigher / 100)
     })
     .classed('county', true)
+
+map.append('path')
+  .datum(states)
+  .attr('d', d3.geoPath())
+  .classed('states', true)
 
 paths.on('mouseover', (event) => {
   const fips = Number(event.target.getAttribute('data-fips'))

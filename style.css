@@ -33,6 +33,15 @@ main {
   padding: 10px;
 }
 
+.map {
+  fill: none;
+}
+
+.states {
+  fill: none;
+  stroke: white;
+}
+
 .tooltip {
   position: absolute;
   display: none;
